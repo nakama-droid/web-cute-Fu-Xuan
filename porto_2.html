@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fu Xuan – Honkai: Star Rail</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink:#d4639c;--pink2:#c85a8f;--pink3:#f4b8d8;
+  --light:#f5eef5;--white:#ffffff;--gray:#aaaaaa;
+  --dark:#1a1a1a;--line:#cccccc;--accent:#e0308c;
+  --pxfont:'Courier New',monospace;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:#f0e8f0}
+
+/* ═══ SCREEN LAYER ═══ */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease,visibility .6s ease}
+.screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+/* ═══════════════════════════════
+   SCREEN 1 — LOADING
+═══════════════════════════════ */
+#screen-loading{
+  background:linear-gradient(160deg,#e8c8e0 0%,#d4a0c8 30%,#c480b0 60%,#b060a0 100%);
+  flex-direction:column;gap:32px;z-index:30
+}
+.sparkles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sparkle{
+  position:absolute;width:6px;height:6px;background:rgba(255,255,255,.8);
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  animation:sparkle-float linear infinite
+}
+@keyframes sparkle-float{
+  0%{transform:translateY(110vh) rotate(0deg) scale(.5);opacity:0}
+  10%{opacity:1}90%{opacity:.7}
+  100%{transform:translateY(-10vh) rotate(720deg) scale(1.2);opacity:0}
+}
+
+/* fluid glass title */
+.loading-title{
+  font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:.08em;
+  color:transparent;
+  background:linear-gradient(135deg,rgba(255,255,255,.95) 0%,rgba(255,200,230,.9) 30%,rgba(255,255,255,.85) 60%,rgba(240,180,215,.95) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,.9);
+  filter:drop-shadow(0 4px 20px rgba(200,80,160,.5));
+  animation:title-pulse 2s ease-in-out infinite;position:relative;z-index:2
+}
+@keyframes title-pulse{
+  0%,100%{filter:drop-shadow(0 4px 20px rgba(200,80,160,.5)) drop-shadow(0 0 40px rgba(255,160,200,.3))}
+  50%{filter:drop-shadow(0 4px 30px rgba(200,80,160,.8)) drop-shadow(0 0 60px rgba(255,160,200,.6))}
+}
+
+/* pixel loading bar */
+.loading-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:2}
+.px-bar-outer{
+  width:260px;height:24px;border:3px solid #111;background:#ffe8f4;
+  image-rendering:pixelated;position:relative;box-shadow:3px 3px 0 #111
+}
+.px-bar-inner{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#ff0080 0%,#ff69b4 50%,#ffb3d9 100%);
+  animation:bar-fill 2.8s cubic-bezier(.4,0,.2,1) forwards;
+  image-rendering:pixelated
+}
+.px-bar-inner::after{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.4) 1px,transparent 1px);
+  background-size:6px 6px
+}
+@keyframes bar-fill{
+  0%{width:0%}30%{width:40%}60%{width:70%}85%{width:88%}100%{width:100%}
+}
+.px-loading-text{
+  font-family:var(--pxfont);font-size:13px;font-weight:700;letter-spacing:.15em;
+  color:#111;text-shadow:1px 1px 0 rgba(255,255,255,.6);
+  animation:blink .9s step-end infinite
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ═══════════════════════════════
+   SCREEN 2 — PIXEL DIALOG
+═══════════════════════════════ */
+#screen-dialog{
+  background:linear-gradient(160deg,#e8c8e0 0%,#d4a0c8 30%,#c480b0 60%,#b060a0 100%);
+  z-index:20
+}
+.px-dialog-outer{
+  background:#ffb3d9;border:4px solid #cc3377;
+  box-shadow:4px 4px 0 #99004d,inset 0 0 0 2px #ff80bb;
+  min-width:320px;max-width:360px;font-family:var(--pxfont);image-rendering:pixelated
+}
+.px-titlebar{
+  background:#ff6699;border-bottom:4px solid #cc3377;
+  padding:6px 8px;display:flex;align-items:center;justify-content:space-between
+}
+.px-titlebar-icons{display:flex;gap:6px}
+.px-icon{
+  width:16px;height:16px;background:#cc55aa;border:2px solid #99004d;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:#fff;font-weight:900;cursor:pointer;transition:background .1s
+}
+.px-icon:hover{background:#ff44aa}
+.px-x-btn{
+  width:18px;height:18px;background:#ff4488;border:2px solid #99004d;
+  color:#fff;font-size:10px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;cursor:pointer
+}
+.px-dialog-body{padding:24px 28px 20px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.px-dialog-text{
+  font-size:16px;color:#cc1166;letter-spacing:.08em;text-align:center;
+  text-shadow:1px 1px 0 rgba(255,255,255,.5)
+}
+.px-ok-btn{
+  background:#ffb3d9;border:3px solid #cc3377;box-shadow:3px 3px 0 #99004d;
+  padding:6px 28px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:transform .05s,box-shadow .05s;font-family:var(--pxfont)
+}
+.px-ok-btn:hover{background:#ffd0e8}
+.px-ok-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #99004d}
+.px-heart-icon{
+  width:22px;height:22px;border:2px solid #cc3377;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#cc3377;background:#fff0f8
+}
+.px-ok-text{font-size:14px;color:#cc1166;letter-spacing:.12em}
+
+/* ═══════════════════════════════
+   SCREEN 3 — LOGIN
+═══════════════════════════════ */
+#screen-login{
+  background:linear-gradient(180deg,#c8a0d0 0%,#b890c8 30%,#d0a8d8 60%,#e8c8e8 100%);
+  overflow:hidden;z-index:15
+}
+.login-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.login-circle{position:absolute;border-radius:50%;border:1.5px solid rgba(255,200,230,.4)}
+.login-circle-1{width:400px;height:400px;top:-80px;left:50%;transform:translateX(-50%)}
+.login-circle-2{width:300px;height:300px;top:-30px;left:50%;transform:translateX(-50%)}
+.login-circle-3{width:200px;height:200px;top:20px;left:50%;transform:translateX(-50%)}
+.login-star-glow{
+  position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(255,240,210,.95) 0%,rgba(255,200,180,.6) 40%,transparent 70%);
+  border-radius:50%
+}
+.login-star-icon{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  font-size:36px;color:rgba(255,220,180,.9);
+  text-shadow:0 0 20px rgba(255,200,150,.8)
+}
+.login-line-l,.login-line-r{
+  position:absolute;top:60px;display:flex;flex-direction:column;align-items:center;gap:20px
+}
+.login-line-l{left:calc(50% - 200px)}.login-line-r{right:calc(50% - 200px)}
+.deco-line{width:1px;height:80px;background:linear-gradient(180deg,transparent,rgba(255,200,220,.6),transparent)}
+.deco-circle-sm{width:8px;height:8px;border-radius:50%;border:1px solid rgba(255,180,210,.6)}
+.deco-arrow{font-size:10px;color:rgba(255,180,210,.7)}
+.cloud-l,.cloud-r{
+  position:absolute;bottom:60px;width:120px;height:80px;
+  background:radial-gradient(ellipse,rgba(255,180,210,.7) 0%,rgba(255,200,230,.4) 60%,transparent 80%);
+  border-radius:50%;filter:blur(8px)
+}
+.cloud-l{left:-20px}.cloud-r{right:-20px}
+.cloud-b{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:500px;height:100px;
+  background:radial-gradient(ellipse,rgba(255,220,240,.8) 0%,rgba(255,200,230,.5) 50%,transparent 80%);
+  filter:blur(12px)
+}
+
+.login-panel{
+  position:relative;z-index:2;
+  background:rgba(255,248,252,.88);border:1.5px solid rgba(220,180,210,.5);
+  border-radius:4px;padding:36px 36px 28px;width:340px;
+  box-shadow:0 8px 32px rgba(180,80,140,.2),0 2px 8px rgba(200,120,160,.15),inset 0 1px 0 rgba(255,255,255,.8);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.panel-top-deco{display:flex;flex-direction:column;align-items:center;margin-bottom:24px;gap:4px}
+.panel-scroll-bar{
+  width:120px;height:8px;
+  background:linear-gradient(90deg,transparent,rgba(200,160,180,.5) 20%,rgba(200,160,180,.5) 80%,transparent);
+  border-radius:4px;position:relative
+}
+.panel-scroll-bar::before,.panel-scroll-bar::after{
+  content:'';position:absolute;top:50%;transform:translateY(-50%);
+  width:6px;height:6px;border-radius:50%;background:rgba(200,130,160,.6)
+}
+.panel-scroll-bar::before{left:10px}.panel-scroll-bar::after{right:10px}
+.panel-wing{font-size:12px;color:rgba(190,130,160,.7);letter-spacing:.15em}
+.login-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid rgba(200,160,180,.4)}
+.tab-btn{
+  flex:1;padding:8px;background:none;border:none;
+  font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.1em;
+  color:rgba(180,120,150,.6);cursor:pointer;position:relative;transition:color .2s
+}
+.tab-btn.active{color:var(--accent)}
+.tab-btn.active::after{
+  content:'';position:absolute;bottom:-1px;left:20%;right:20%;
+  height:2px;background:var(--accent);border-radius:2px
+}
+.input-group{margin-bottom:14px}
+.input-group label{
+  display:block;font-size:10px;letter-spacing:.12em;
+  color:rgba(160,100,130,.9);margin-bottom:5px;text-transform:uppercase
+}
+.fancy-input{
+  width:100%;background:rgba(255,240,250,.7);
+  border:1px solid rgba(210,160,190,.5);border-radius:3px;
+  padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dark);
+  outline:none;transition:border-color .2s,box-shadow .2s
+}
+.fancy-input:focus{border-color:var(--pink2);box-shadow:0 0 0 3px rgba(200,90,143,.12)}
+.fancy-input::placeholder{color:rgba(180,140,160,.5)}
+.login-submit{
+  width:100%;margin-top:6px;padding:10px;
+  background:linear-gradient(135deg,#e8709c 0%,#d4507c 100%);
+  border:none;border-radius:3px;color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:.12em;
+  cursor:pointer;transition:opacity .2s,transform .1s;
+  box-shadow:0 3px 12px rgba(200,80,120,.3)
+}
+.login-submit:hover{opacity:.9}.login-submit:active{transform:scale(.98)}
+.login-msg{margin-top:10px;font-size:11px;text-align:center;min-height:16px;letter-spacing:.06em}
+.login-msg.err{color:#d04060}.login-msg.ok{color:#40a060}
+.panel-bottom-deco{
+  text-align:center;margin-top:14px;font-size:11px;
+  letter-spacing:.14em;color:rgba(170,120,150,.6);text-transform:uppercase
+}
+
+/* ═══════════════════════════════
+   SCREEN 4 — MAIN CARD
+═══════════════════════════════ */
+#screen-main{background:#f8f3f8;z-index:5;overflow:auto}
+.card{
+  position:relative;width:620px;min-height:820px;
+  background:var(--white);overflow:hidden;
+  box-shadow:0 8px 48px rgba(180,80,140,.18);
+  animation:card-reveal .8s cubic-bezier(.2,0,.1,1) both
+}
+@keyframes card-reveal{
+  from{opacity:0;transform:translateY(24px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.bg-star{
+  position:absolute;right:80px;top:280px;font-size:72px;
+  color:#e8a0c8;opacity:.35;font-weight:700;z-index:0;line-height:1;user-select:none
+}
+.bg-band{
+  position:absolute;top:0;right:0;width:220px;height:100%;
+  background:linear-gradient(160deg,#e8afd4 0%,#d97bb5 40%,#c55c9d 75%,#b04488 100%);z-index:0
+}
+.char-img{
+  position:absolute;right:0;top:0;width:260px;height:100%;
+  z-index:1;object-fit:contain;object-position:top right
+}
+.content{position:relative;z-index:2;padding:28px 32px 32px 32px;width:100%;max-width:340px}
+.top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.label-character{font-size:11px;letter-spacing:.12em;color:var(--dark)}
+.top-line{flex:1;height:1px;background:var(--line);margin:0 12px}
+.kanji-row{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.kanji{font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:var(--dark);letter-spacing:.05em}
+.game-name{font-size:11px;color:var(--gray);letter-spacing:.08em}
+.name-main{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:.02em;color:var(--dark);line-height:.95;margin-bottom:2px}
+.name-dot{color:var(--accent)}
+.playable-label{font-size:10px;letter-spacing:.14em;color:var(--gray);margin-bottom:14px;text-transform:uppercase}
+.divider{height:1px;background:var(--line);margin-bottom:12px;width:55%}
+.tags{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tag{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:4px;padding:4px 10px;font-size:11px;letter-spacing:.06em;color:var(--dark);font-weight:500}
+.tag-icon{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.section-dot{width:8px;height:8px;background:var(--accent);flex-shrink:0}
+.section-title{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dark)}
+.section-lines{font-size:9px;letter-spacing:.2em;color:var(--gray)}
+.overview-text{font-size:10.5px;line-height:1.65;color:#555;max-width:300px;margin-bottom:6px;padding-left:16px}
+.overview-jp{font-family:'Noto Serif JP',serif;font-size:9px;color:#999;line-height:1.6;max-width:300px;padding-left:16px;margin-bottom:22px}
+.meta-row{display:flex;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0}
+.meta-item{flex:1;display:flex;flex-direction:column;gap:2px}
+.meta-item+.meta-item{border-left:1px solid var(--line);padding-left:16px}
+.meta-label{font-size:10px;letter-spacing:.12em;color:var(--gray);text-transform:uppercase}
+.meta-lines{font-size:9px;color:#ccc;letter-spacing:.18em}
+.headline-block{padding:20px 0 18px 0;border-bottom:1px solid var(--line)}
+.headline-sub{font-size:10px;letter-spacing:.12em;color:var(--gray);text-transform:uppercase;margin-bottom:2px}
+.headline-main{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:var(--dark);letter-spacing:.01em}
+.headline-main span{color:var(--accent)}
+.foreknown-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:16px}
+.foreknown-label{font-size:10px;letter-spacing:.12em;color:var(--gray);text-transform:uppercase}
+.foreknown-lines{font-size:9px;color:#ccc;letter-spacing:.2em}
+.quote-block{display:flex;align-items:center;gap:12px;background:#faf5fa;border:1px solid #e8d8e8;border-radius:6px;padding:10px 14px;margin-bottom:20px;max-width:360px}
+.quote-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--pink);background:linear-gradient(135deg,#e8b0d0,#c870a0)}
+.quote-avatar img{width:100%;height:100%;object-fit:cover;object-position:60% 10%}
+.quote-text{font-size:10.5px;color:#444;font-style:italic;line-height:1.5;flex:1}
+.quote-mark{font-size:28px;color:var(--pink);line-height:1;align-self:flex-end;margin-bottom:-4px;font-family:Georgia,serif}
+.bottom-row{display:flex;align-items:center;border-top:1px solid var(--line);padding-top:10px;margin-bottom:14px}
+.date-label{font-size:10px;color:var(--gray);letter-spacing:.1em;flex:0 0 auto}
+.bottom-sep{flex:1;height:1px;background:var(--line);margin:0 12px}
+.bottom-lines{font-size:9px;color:#ccc;letter-spacing:.2em}
+.footer-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.barcode-svg{width:100px;height:28px}
+.footer-text{font-size:8px;color:#bbb;text-align:right;line-height:1.6;letter-spacing:.04em}
+.swatch{width:14px;height:14px}
+.swatch-dark{background:#2a2a2a}.swatch-pink{background:#c85a8f}
+.welcome-banner{
+  position:absolute;top:12px;right:12px;font-size:10px;
+  letter-spacing:.1em;color:var(--gray);z-index:10
+}
+.welcome-banner span{color:var(--accent);font-weight:600}
+.logout-btn{display:inline-block;margin-left:8px;font-size:9px;color:var(--pink2);cursor:pointer;text-decoration:underline}
+.logout-btn:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- ═══ SCREEN 1: LOADING ═══ -->
+<div class="screen" id="screen-loading">
+  <div class="sparkles" id="sparkle-container"></div>
+  <div class="loading-title">FU XUAN</div>
+  <div class="loading-bar-wrap">
+    <div class="px-bar-outer">
+      <div class="px-bar-inner" id="px-bar"></div>
+    </div>
+    <div class="px-loading-text" id="loading-text">LOADING...</div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2: PIXEL DIALOG ═══ -->
+<div class="screen hidden" id="screen-dialog">
+  <div class="px-dialog-outer">
+    <div class="px-titlebar">
+      <div class="px-titlebar-icons">
+        <div class="px-icon">Y</div>
+        <div class="px-icon">Y</div>
+        <div class="px-icon">Y</div>
+      </div>
+      <div class="px-x-btn">X</div>
+    </div>
+    <div class="px-dialog-body">
+      <div class="px-dialog-text">start game?</div>
+      <div class="px-ok-btn" id="dialog-ok-btn">
+        <div class="px-heart-icon">♥</div>
+        <span class="px-ok-text">OK</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3: LOGIN ═══ -->
+<div class="screen hidden" id="screen-login">
+  <div class="login-bg">
+    <div class="login-circle login-circle-1"></div>
+    <div class="login-circle login-circle-2"></div>
+    <div class="login-circle login-circle-3"></div>
+    <div class="login-star-glow"></div>
+    <div class="login-star-icon">✦</div>
+    <div class="login-line-l">
+      <div class="deco-line"></div>
+      <div class="deco-circle-sm"></div>
+      <div class="deco-arrow">▲</div>
+      <div class="deco-arrow">▲</div>
+    </div>
+    <div class="login-line-r">
+      <div class="deco-line"></div>
+      <div class="deco-circle-sm"></div>
+      <div class="deco-arrow">▲</div>
+      <div class="deco-arrow">▲</div>
+    </div>
+    <div class="cloud-l"></div>
+    <div class="cloud-r"></div>
+    <div class="cloud-b"></div>
+  </div>
+
+  <div class="login-panel">
+    <div class="panel-top-deco">
+      <div class="panel-scroll-bar"></div>
+      <div class="panel-wing">— ✦ —</div>
+    </div>
+    <div class="login-tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">LOGIN</button>
+      <button class="tab-btn" id="tab-register" onclick="switchTab('register')">REGISTER</button>
+    </div>
+
+    <!-- login -->
+    <div id="form-login">
+      <div class="input-group">
+        <label>Username</label>
+        <input class="fancy-input" type="text" id="login-user" placeholder="Enter username" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input class="fancy-input" type="password" id="login-pass" placeholder="••••••••">
+      </div>
+      <button class="login-submit" onclick="doLogin()">ENTER</button>
+      <div class="login-msg" id="login-msg"></div>
+    </div>
+
+    <!-- register -->
+    <div id="form-register" style="display:none">
+      <div class="input-group">
+        <label>Username</label>
+        <input class="fancy-input" type="text" id="reg-user" placeholder="Choose username" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input class="fancy-input" type="password" id="reg-pass" placeholder="Create password">
+      </div>
+      <button class="login-submit" onclick="doRegister()">CREATE</button>
+      <div class="login-msg" id="reg-msg"></div>
+    </div>
+
+    <div class="panel-bottom-deco">✦ PASSWORD ✦</div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 4: MAIN ═══ -->
+<div class="screen hidden" id="screen-main">
+  <div class="card">
+    <div class="welcome-banner">
+      Logged in as <span id="logged-user">—</span>
+      <span class="logout-btn" onclick="doLogout()">[logout]</span>
+    </div>
+    <div class="bg-band"></div>
+    <div class="bg-star">*</div>
+    <img class="char-img" src="c:\Users\labubu\Downloads\Fu Xuan-jukebox-bg-removed.png" alt="Fu Xuan">
+    <div class="content">
+      <div class="top-row">
+        <span class="label-character">Character</span>
+        <div class="top-line"></div>
+      </div>
+      <div class="kanji-row">
+        <span class="kanji">福玄</span>
+        <span class="game-name">Honkai: Star Rail</span>
+      </div>
+      <div class="name-main">Fu Xuan<span class="name-dot"> ·</span></div>
+      <div class="playable-label">Playable Character</div>
+      <div class="tags">
+        <div class="tag"><div class="tag-icon" style="background:#5cbfbf;color:#fff;">⬡</div>Preservation</div>
+        <div class="tag"><div class="tag-icon" style="background:#9070cc;color:#fff;">◈</div>Quantum</div>
+      </div>
+      <div class="section-header">
+        <div class="section-dot"></div>
+        <span class="section-title">Overview</span>
+        <span class="section-lines">//////</span>
+      </div>
+      <div class="divider"></div>
+      <p class="overview-text">The confident yet blunt Master Diviner of the<br>Xianzhou Luofu's Divination Commission<br>and one of the Six Charclatiers.</p>
+      <p class="overview-jp">仙州羅府の占術委員会の自信家だが無愛想な占<br>師であり、六人の覚者のうちの一人。</p>
+      <div class="meta-row">
+        <div class="meta-item"><span class="meta-label">Foreseen</span><span class="meta-lines">//////</span></div>
+        <div class="meta-item"><span class="meta-label">Foretold</span></div>
+      </div>
+      <div class="headline-block">
+        <div class="headline-sub">Foreknown &nbsp; //////</div>
+        <div class="headline-main">Head of <span>Divination</span><br><span>Commission.</span></div>
+      </div>
+      <div class="foreknown-row">
+        <span class="foreknown-label">Foreknown</span>
+        <span class="foreknown-lines">//////</span>
+      </div>
+      <div class="quote-block">
+        <div class="quote-avatar"><img src="/mnt/user-data/uploads/1777196533912_image.png" alt="avatar"></div>
+        <span class="quote-text">"I am Fu Xuan, head of the Divination Commission."</span>
+        <span class="quote-mark">"</span>
+      </div>
+      <div class="bottom-row">
+        <span class="date-label">05.07.2024</span>
+        <div class="bottom-sep"></div>
+        <span class="bottom-lines">//////</span>
+      </div>
+      <div class="footer-row">
+        <svg class="barcode-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="2" height="50" fill="#333"/><rect x="4" y="0" width="1" height="50" fill="#333"/>
+          <rect x="7" y="0" width="3" height="50" fill="#333"/><rect x="12" y="0" width="1" height="50" fill="#333"/>
+          <rect x="15" y="0" width="2" height="50" fill="#333"/><rect x="19" y="0" width="4" height="50" fill="#333"/>
+          <rect x="25" y="0" width="1" height="50" fill="#333"/><rect x="28" y="0" width="2" height="50" fill="#333"/>
+          <rect x="32" y="0" width="1" height="50" fill="#333"/><rect x="35" y="0" width="3" height="50" fill="#333"/>
+          <rect x="40" y="0" width="1" height="50" fill="#333"/><rect x="43" y="0" width="2" height="50" fill="#333"/>
+          <rect x="47" y="0" width="4" height="50" fill="#333"/><rect x="53" y="0" width="1" height="50" fill="#333"/>
+          <rect x="56" y="0" width="2" height="50" fill="#333"/><rect x="60" y="0" width="3" height="50" fill="#333"/>
+          <rect x="65" y="0" width="1" height="50" fill="#333"/><rect x="68" y="0" width="2" height="50" fill="#333"/>
+          <rect x="72" y="0" width="1" height="50" fill="#333"/><rect x="75" y="0" width="4" height="50" fill="#333"/>
+          <rect x="81" y="0" width="2" height="50" fill="#333"/><rect x="85" y="0" width="1" height="50" fill="#333"/>
+          <rect x="88" y="0" width="3" height="50" fill="#333"/><rect x="93" y="0" width="1" height="50" fill="#333"/>
+          <rect x="96" y="0" width="2" height="50" fill="#333"/><rect x="100" y="0" width="4" height="50" fill="#333"/>
+          <rect x="106" y="0" width="1" height="50" fill="#333"/><rect x="109" y="0" width="2" height="50" fill="#333"/>
+          <rect x="113" y="0" width="3" height="50" fill="#333"/><rect x="118" y="0" width="1" height="50" fill="#333"/>
+          <rect x="121" y="0" width="2" height="50" fill="#333"/><rect x="125" y="0" width="1" height="50" fill="#333"/>
+          <rect x="128" y="0" width="4" height="50" fill="#333"/><rect x="134" y="0" width="2" height="50" fill="#333"/>
+          <rect x="138" y="0" width="1" height="50" fill="#333"/><rect x="141" y="0" width="3" height="50" fill="#333"/>
+          <rect x="146" y="0" width="1" height="50" fill="#333"/><rect x="149" y="0" width="2" height="50" fill="#333"/>
+          <rect x="153" y="0" width="4" height="50" fill="#333"/><rect x="159" y="0" width="1" height="50" fill="#333"/>
+          <rect x="162" y="0" width="2" height="50" fill="#333"/><rect x="166" y="0" width="1" height="50" fill="#333"/>
+          <rect x="169" y="0" width="3" height="50" fill="#333"/><rect x="174" y="0" width="2" height="50" fill="#333"/>
+          <rect x="178" y="0" width="1" height="50" fill="#333"/><rect x="181" y="0" width="4" height="50" fill="#333"/>
+          <rect x="187" y="0" width="2" height="50" fill="#333"/><rect x="191" y="0" width="1" height="50" fill="#333"/>
+          <rect x="194" y="0" width="3" height="50" fill="#333"/><rect x="199" y="0" width="1" height="50" fill="#333"/>
+        </svg>
+        <div style="display:flex;gap:2px;">
+          <div class="swatch swatch-dark"></div>
+          <div class="swatch swatch-pink"></div>
+        </div>
+        <div class="footer-text">DESIGN BY ZENXTY<br>© HOYOVERSE. ALL RIGHT RESERVED.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── SPARKLES ── */
+(function(){
+  const c=document.getElementById('sparkle-container');
+  const cols=['rgba(255,255,255,.9)','rgba(255,200,230,.9)','rgba(255,160,210,.8)'];
+  for(let i=0;i<28;i++){
+    const s=document.createElement('div');s.className='sparkle';
+    s.style.left=Math.random()*100+'%';
+    const sz=(4+Math.random()*8)+'px';s.style.width=s.style.height=sz;
+    s.style.background=cols[Math.floor(Math.random()*cols.length)];
+    s.style.animationDuration=(4+Math.random()*6)+'s';
+    s.style.animationDelay=(Math.random()*5)+'s';
+    c.appendChild(s);
+  }
+})();
+
+/* ── SCREEN HELPERS ── */
+function show(id){document.getElementById(id).classList.remove('hidden')}
+function hide(id){document.getElementById(id).classList.add('hidden')}
+
+/* ── LOADING → DIALOG ── */
+function startLoading(){
+  show('screen-loading');
+  // reset bar
+  const bar=document.getElementById('px-bar');
+  bar.style.animation='none';void bar.offsetWidth;bar.style.animation='bar-fill 2.8s cubic-bezier(.4,0,.2,1) forwards';
+  const phases=['LOADING...','READING FATE...','DIVINATION COMPLETE!'];
+  let i=0;const ltxt=document.getElementById('loading-text');ltxt.textContent=phases[0];
+  setTimeout(()=>{
+    const iv=setInterval(()=>{
+      i++;
+      if(i<phases.length){ltxt.textContent=phases[i];}
+      else{clearInterval(iv);hide('screen-loading');show('screen-dialog');}
+    },900);
+  },1400);
+}
+startLoading();
+
+/* ── DIALOG OK → LOGIN ── */
+document.getElementById('dialog-ok-btn').addEventListener('click',()=>{
+  hide('screen-dialog');
+  const sess=sessionStorage.getItem('fxuan_user');
+  if(sess){
+    document.getElementById('logged-user').textContent=sess;
+    show('screen-main');
+  } else {
+    show('screen-login');
+  }
+});
+
+/* ── TAB SWITCH ── */
+function switchTab(tab){
+  document.getElementById('form-login').style.display=tab==='login'?'block':'none';
+  document.getElementById('form-register').style.display=tab==='register'?'block':'none';
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+  document.getElementById('login-msg').textContent='';
+  document.getElementById('reg-msg').textContent='';
+}
+
+/* ── USER DB (localStorage) ── */
+function getUsers(){return JSON.parse(localStorage.getItem('fxuan_users')||'{}')}
+function saveUsers(u){localStorage.setItem('fxuan_users',JSON.stringify(u))}
+
+function doRegister(){
+  const u=document.getElementById('reg-user').value.trim();
+  const p=document.getElementById('reg-pass').value;
+  const msg=document.getElementById('reg-msg');
+  if(!u||!p){msg.className='login-msg err';msg.textContent='Fill all fields.';return}
+  const db=getUsers();
+  if(db[u]){msg.className='login-msg err';msg.textContent='Username already taken.';return}
+  db[u]=p;saveUsers(db);
+  msg.className='login-msg ok';msg.textContent='Registered! Switching to login...';
+  setTimeout(()=>switchTab('login'),1200);
+}
+
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const msg=document.getElementById('login-msg');
+  if(!u||!p){msg.className='login-msg err';msg.textContent='Fill all fields.';return}
+  const db=getUsers();
+  if(!db[u]||db[u]!==p){msg.className='login-msg err';msg.textContent='Wrong username or password.';return}
+  sessionStorage.setItem('fxuan_user',u);
+  msg.className='login-msg ok';msg.textContent='Welcome, '+u+'!';
+  setTimeout(()=>{
+    document.getElementById('logged-user').textContent=u;
+    hide('screen-login');show('screen-main');
+  },700);
+}
+
+function doLogout(){
+  sessionStorage.removeItem('fxuan_user');
+  hide('screen-main');
+  startLoading();
+}
+
+/* ── ENTER KEY ── */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const fl=document.getElementById('form-login');
+  if(fl.style.display!=='none')doLogin();else doRegister();
+});
+</script>
+</body>
+</html>
